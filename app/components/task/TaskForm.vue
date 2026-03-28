@@ -1,42 +1,46 @@
+<!-- TaskForm.vue -->
 <template>
-  <form @submit.prevent="submit">
-    <AppInput v-model="form.title" placeholder="Название" />
-    <AppInput v-model="form.description" placeholder="Описание" />
-    <AppInput type="date" v-model="form.dueDate" />
+  <form class="space-y-4" @submit.prevent="submit">
+    <UInput v-model="form.title" label="Название" required />
+    <UTextarea v-model="form.description" label="Описание" :rows="3" />
+    <UInput
+      v-model="form.dueDate"
+      type="date"
+      label="Срок выполнения"
+      required
+    />
 
-    <label>
-      <input type="checkbox" v-model="form.isCompleted" />
-      Выполнено
-    </label>
+    <UCheckbox v-model="form.isCompleted" label="Задача выполнена" />
 
-    <AppButton>Сохранить</AppButton>
+    <div class="flex justify-end gap-3">
+      <UButton type="button" variant="ghost" @click="$emit('cancel')">
+        Отмена
+      </UButton>
+      <UButton type="submit" color="green"> Сохранить </UButton>
+    </div>
   </form>
 </template>
 
-<script setup>
-const props = defineProps({
-  initial: Object,
-})
-
-const emit = defineEmits(['save'])
+<script setup lang="ts">
+const props = defineProps({ initial: Object });
+const emit = defineEmits(["save", "cancel"]);
 
 const form = reactive({
-  title: '',
-  description: '',
-  dueDate: '',
+  title: "",
+  description: "",
+  dueDate: "",
   isCompleted: false,
-})
+});
 
-onMounted(() => {
-  if (props.initial) Object.assign(form, props.initial)
-})
+if (props.initial) {
+  Object.assign(form, props.initial);
+}
 
 const submit = () => {
   if (!form.title || !form.dueDate) {
-    alert('Заполни обязательные поля')
-    return
+    alert("Заполните название и срок"); // потом замени на toast
+    return;
   }
-
-  emit('save', form)
-}
+  emit("save", { ...form });
+};
 </script>

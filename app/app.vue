@@ -1,51 +1,33 @@
 <template>
-  <div class="min-h-screen bg-gray-50 text-gray-900">
-    <!-- HEADER -->
-    <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-      <h1 class="text-lg font-semibold">ToDo App</h1>
-
-      <div v-if="auth.token">
-        <button
+  <div
+    class="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans antialiased"
+  >
+    <UHeader>
+      <template #left>
+        <h1 class="text-2xl font-semibold tracking-tight">ToDo App</h1>
+      </template>
+      <template #right>
+        <UButton
+          v-if="auth.isAuthenticated"
+          color="red"
+          variant="ghost"
           @click="logout"
-          class="text-sm bg-red-500 text-white px-3 py-1 rounded"
         >
           Выйти
-        </button>
-      </div>
-    </header>
+        </UButton>
+      </template>
+    </UHeader>
 
-    <!-- GLOBAL LOADER -->
-    <div v-if="loading" class="h-1 bg-blue-500 animate-pulse"></div>
+    <NuxtLoadingIndicator color="#00C16A" />
 
-    <!-- PAGE -->
-    <main class="p-6">
+    <main class="p-6 max-w-5xl mx-auto">
       <NuxtPage />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-const auth = useAuthStore()
-const loading = ref(false)
+const auth = useAuthStore();
 
-// 🔐 init auth (если вдруг plugin не сработал)
-onMounted(() => {
-  auth.init()
-})
-
-// 🚀 loader при навигации
-const router = useRouter()
-
-router.beforeEach(() => {
-  loading.value = true
-})
-
-router.afterEach(() => {
-  loading.value = false
-})
-
-// logout
-const logout = () => {
-  auth.logout()
-}
+const logout = () => auth.logout();
 </script>

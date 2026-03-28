@@ -1,58 +1,105 @@
+<!-- pages/index.vue -->
 <template>
-  <div v-if="!tasksStore.loading" class="p-6">
-    <div class="flex justify-between mb-4">
-      <input v-model="search" placeholder="Поиск..." class="input" />
-      <button class="btn" @click="openModal">+ Добавить</button>
-    </div>
+  <div>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center justify-between mb-8">
+      <UInput
+        v-model="tasksStore.search"
+        placeholder="Поиск по названию..."
+        icon="i-lucide-search"
+        class="w-full sm:w-96"
+      />
 
-    <div v-if="!tasksStore.tasks.length">Нет задач 😢</div>
+      <div class="flex gap-3">
+        <USelect v-model="tasksStore.filterStatus" :options="statusOptions" />
+        <USelect v-model="tasksStore.sortBy" :options="sortOptions" />
 
-    <div class="grid gap-4">
-      <div
-        v-for="task in tasksStore.tasks"
-        :key="task.id"
-        class="p-4 bg-white shadow rounded"
-      >
-        <h3>{{ task.title }}</h3>
-        <p>{{ task.description }}</p>
-
-        <button class="text-red-500" @click="tasksStore.deleteTask(task.id)">
-          Удалить
-        </button>
+        <UButton icon="i-lucide-plus" @click="openModal">
+          Новая задача
+        </UButton>
       </div>
     </div>
-  </div>
 
-  <div v-else class="text-center p-10">Loading...</div>
+    <div v-if="tasksStore.error" class="text-red-500 mb-4 p-3 bg-red-50 rounded">
+      {{ tasksStore.error }}
+    </div>
+
+    <!-- Loading -->
+    <div v-if="tasksStore.loading" class="flex justify-center py-12">
+      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin text-green-500" />
+    </div>
+
+    <!-- Empty -->
+    <UCard v-else-if="tasksStore.tasks.length === 0" class="text-center py-12">
+      <p class="text-gray-500">Нет задач. Создайте первую!</p>
+    </UCard>
+
+    <!-- Tasks grid -->
+    <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <TaskCard
+        v-for="task in tasksStore.tasks"
+        :key="task.id"
+        :task="task"
+        @edit="editTask"
+        @delete="deleteTask"
+      />
+    </div>
+
+    <!-- Modal -->
+    <UModal
+      v-model="showModal"
+      :title="editingTask ? 'Редактировать задачу' : 'Новая задача'"
+    >
+      <TaskForm :initial="editingTask" @save="handleSave" />
+    </UModal>
+  </div>
 </template>
 
-<script setup>
-const search = ref("");
-
-const debounced = useDebounce(() => {
-  tasks.fetchTasks();
-}, 500);
-
-watch(search, (v) => {
-  tasks.search = v;
-  debounced();
+<script setup lang="ts">
+definePageMeta({
+  middleware: 'auth'
 });
 
-  // <div v-if="!tasks.tasks.length && !tasks.loading">Ничего не найдено 😢</div>
-
-definePageMeta({ middleware: "auth" });
-
 const tasksStore = useTasksStore();
+const showModal = ref(false);
+const editingTask = ref<any>(null);
 
-const search = ref("");
+const statusOptions = [
+  { value: "", label: "Все задачи" },
+  { value: "false", label: "Активные" },
+  { value: "true", label: "Выполненные" },
+];
 
-const debounced = useDebounce(() => {
-  tasksStore.fetchTasks({ search: search.value });
-}, 500);
-
-watch(search, debounced);
+const sortOptions = [
+  { value: "date", label: "По дате" },
+  { value: "status", label: "По статусу" },
+];
 
 onMounted(() => {
   tasksStore.fetchTasks();
 });
+
+const openModal = () => {
+  editingTask.value = null;
+  showModal.value = true;
+};
+
+const editTask = (task: any) => {
+  editingTask.value = { ...task };
+  showModal.value = true;
+};
+
+const handleSave = async (formData: any) => {
+  if (editingTask.value) {
+    await tasksStore.updateTask(editingTask.value.id, formData);
+  } else {
+    await tasksStore.createTask(formData);
+  }
+  showModal.value = false;
+};
+
+const deleteTask = async (id: string) => {
+  if (confirm("Удалить задачу?")) {
+    await tasksStore.deleteTask(id);
+  }
+};
 </script>

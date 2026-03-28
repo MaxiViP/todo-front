@@ -1,33 +1,52 @@
 <template>
-  <div class="flex items-center justify-center h-screen">
-    <div class="w-96 p-6 bg-white shadow rounded-xl">
-      <h2 class="text-xl mb-4">Login</h2>
+  <div class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
+    <UCard class="w-full max-w-md">
+      <h2 class="text-2xl font-semibold mb-6 text-center">Вход в ToDo App</h2>
 
-      <input v-model="email" placeholder="Email" class="input" />
-      <input v-model="password" type="password" placeholder="Password" class="input mt-2" />
+      <form @submit.prevent="handleLogin" class="space-y-5">
+        <UFormField label="Email" required>
+          <UInput v-model="email" type="email" placeholder="admin@test.com" size="lg" />
+        </UFormField>
 
-      <button @click="handleLogin" class="btn mt-4 w-full">
-        Login
-      </button>
-    </div>
+        <UFormField label="Пароль" required>
+          <UInput v-model="password" type="password" placeholder="••••••••" size="lg" />
+        </UFormField>
+
+        <UButton type="submit" color="green" size="lg" class="w-full" :loading="loading">
+          Войти
+        </UButton>
+      </form>
+
+      <div class="text-center text-sm text-gray-500 mt-6">
+        Нет аккаунта?
+        <NuxtLink to="/register" class="text-green-600 hover:underline">
+          Зарегистрироваться
+        </NuxtLink>
+      </div>
+    </UCard>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const email = ref('')
 const password = ref('')
+const loading = ref(false)
+
 const auth = useAuthStore()
 
-const handleLogin = () => {
-  auth.login(email.value, password.value)
+const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    alert('Введите email и пароль')
+    return
+  }
+
+  loading.value = true
+  try {
+    await auth.login(email.value, password.value)
+  } catch (err: any) {
+    alert(err.response?.data?.message || 'Неверный email или пароль')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
-
-<style>
-.input {
-  @apply w-full border p-2 rounded;
-}
-.btn {
-  @apply bg-blue-500 text-white p-2 rounded;
-}
-</style>
