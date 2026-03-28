@@ -1,25 +1,54 @@
-/* main.css */
-
+/* Импорт Tailwind и Nuxt UI */
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* Тема */
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: "Public Sans", system-ui, sans-serif;
 
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+  /* Основные цвета текста и фона */
+  --color-text: #111827;      /* темный текст (Dark Gray) */
+  --color-bg: #ffffff;        /* белый фон */
+  --color-bg-overlay: rgba(0, 0, 0, 0.4); /* полупрозрачный черный для оверлея */
+
+  /* Кнопки */
+  --color-btn-primary-bg: #22c55e; /* зеленый для кнопок сохранения */
+  --color-btn-primary-text: #ffffff;
+  --color-btn-ghost-text: #374151; /* темно-серый для кнопок "Отмена" */
+
+  /* Модалки */
+  --modal-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --modal-border-radius: 1rem;
+  --modal-padding: 1.5rem;
 }
+
+/* Дополнительно: глобальный текст */
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+/* Модалки */
+.modal-overlay {
+  background-color: var(--color-bg-overlay);
+}
+
+.modal-content {
+  background-color: var(--color-bg);
+  box-shadow: var(--modal-shadow);
+  border-radius: var(--modal-border-radius);
+  padding: var(--modal-padding);
+  color: var(--color-text);
+}
+
+/* Кнопки */
+.btn-primary {
+  background-color: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+}
+
+.btn-ghost {
+  color: var(--color-btn-ghost-text);
+}
+

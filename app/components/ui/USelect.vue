@@ -1,21 +1,37 @@
 <template>
   <select
+    v-model="modelValue"
     :class="[
-      'border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500',
+      'w-full bg-gray-50 border border-gray-300 rounded-md px-3 py-2.5',
+      'text-gray-900 focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-300',
+      'transition-colors cursor-pointer',
+      props.class
     ]"
-    :value="modelValue"
-    @change="$emit('update:modelValue', $event.target.value)"
   >
-    <option v-for="option in options" :key="option.value" :value="option.value">
+    <option
+      v-for="option in options"
+      :key="option.value"
+      :value="option.value"
+    >
       {{ option.label }}
     </option>
   </select>
 </template>
 
 <script setup lang="ts">
-defineProps({
-  modelValue: [String, Number],
-  options: { type: Array, default: () => [] },
-  class: String,
+const props = defineProps<{
+  modelValue: string | number | null;
+  options: Array<{ value: any; label: string }>;
+  class?: string;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string | number | null): void;
+}>();
+
+// Двусторонняя привязка через v-model
+const modelValue = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
 });
 </script>

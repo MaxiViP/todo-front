@@ -1,27 +1,38 @@
-<!-- AppModal.vue -->
 <template>
-  <div
-    v-if="modelValue"
-    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-    @click.self="close"
-  >
-    <div class="bg-white p-6 rounded-xl w-96 relative">
-      <!-- Кнопка закрыть -->
-      <button
-        type="button"
-        class="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-        @click="close"
-      >
-        ✕
-      </button>
+  <transition name="fade">
+    <div
+      v-if="modelValue"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      @click.self="close"
+    >
+      <transition name="scale-fade">
+        <div
+          class="bg-white text-gray-900 p-6 rounded-xl w-96 relative shadow-xl"
+          v-if="modelValue"
+        >
+          <!-- Кнопка закрыть -->
+          <button
+            type="button"
+            class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors"
+            @click="close"
+            aria-label="Закрыть модалку"
+          >
+            ✕
+          </button>
 
-      <!-- Заголовок -->
-      <h2 v-if="title" class="text-lg font-semibold mb-4">{{ title }}</h2>
+          <!-- Заголовок -->
+          <h2 v-if="title" class="text-xl font-semibold mb-4">
+            {{ title }}
+          </h2>
 
-      <!-- Слот с контентом -->
-      <slot />
+          <!-- Контент -->
+          <div class="space-y-4">
+            <slot />
+          </div>
+        </div>
+      </transition>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -40,5 +51,41 @@ const close = () => {
 </script>
 
 <style scoped>
-/* Можно добавить анимацию появления */
+/* Фейд анимация для затемнения фона */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+
+/* Анимация скейла для контента */
+.scale-fade-enter-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.scale-fade-leave-active {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.scale-fade-enter-from {
+  transform: scale(0.95);
+  opacity: 0;
+}
+.scale-fade-enter-to {
+  transform: scale(1);
+  opacity: 1;
+}
+.scale-fade-leave-from {
+  transform: scale(1);
+  opacity: 1;
+}
+.scale-fade-leave-to {
+  transform: scale(0.95);
+  opacity: 0;
+}
 </style>

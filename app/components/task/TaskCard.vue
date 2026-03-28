@@ -1,9 +1,17 @@
-<!-- TaskCard.vue -->
 <template>
   <UCard class="h-full flex flex-col">
     <div class="flex justify-between items-start">
       <h3 class="font-medium">{{ task.title }}</h3>
-      <UToggle v-model="localCompleted" @change="toggleComplete" />
+
+      <!-- Кнопка выполнено -->
+      <UButton
+        size="sm"
+        :color="localCompleted ? 'success' : 'gray'"
+        variant="outline"
+        @click="toggleComplete"
+      >
+        {{ localCompleted ? '✅ Выполнено' : '⬜ Не выполнено' }}
+      </UButton>
     </div>
 
     <p v-if="task.description" class="text-sm text-gray-600 mt-2 line-clamp-2">
@@ -14,7 +22,7 @@
       <UButton size="sm" variant="outline" @click="$emit('edit', task)">
         ✏️ Редактировать
       </UButton>
-      <UButton size="sm" color="success" variant="ghost" @click="$emit('delete', task.id)">
+      <UButton size="sm" color="danger" variant="ghost" @click="$emit('delete', task.id)">
         🗑 Удалить
       </UButton>
     </div>
@@ -22,22 +30,38 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import { useTasksStore } from '@/stores/tasks'
+import { useAuthStore } from '@/stores/auth'
+
 const props = defineProps<{ task: any }>()
 const emit = defineEmits(['edit', 'delete'])
+
 const auth = useAuthStore()
+const tasksStore = useTasksStore()
 
 const canManage = computed(() => {
   return auth.user?.role === 'admin' || auth.user?.id === props.task.userId
 })
 
+// Локальный стейт для кнопки
 const localCompleted = ref(props.task.isCompleted)
 
-const tasksStore = useTasksStore()
-const toggleComplete = async () => {
-  await tasksStore.updateTask(props.task.id, { isCompleted: localCompleted.value })
-  watch(
+// Следим за изменением задачи извне и синхронизируем локальный стейт
+watch(
   () => props.task.isCompleted,
   (v) => (localCompleted.value = v)
 )
+
+// Обновление статуса задачи
+const toggleComplete = async () => {
+  localCompleted.value = !localCompleted.value
+  try {
+    await tasksStore.updateTask(props.task.id, { isCompleted: localCompleted.value })
+  } catch (err) {
+    console.error('Ошибка обновления статуса задачи:', err)
+    // Если ошибка, откатываем визуально
+    localCompleted.value = !localCompleted.value
+  }
 }
 </script>
