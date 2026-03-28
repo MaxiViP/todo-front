@@ -22,6 +22,8 @@
 </template>
 
 <script setup lang="ts">
+import { reactive } from "vue";
+
 const props = defineProps({ initial: Object });
 const emit = defineEmits(["save", "cancel"]);
 
