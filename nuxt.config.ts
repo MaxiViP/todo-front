@@ -5,7 +5,8 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
 
   ui: {
-    colors: { primary: "green", neutral: "slate" },
+    primary: "green",
+    neutral: "slate",
   },
 
   vite: {

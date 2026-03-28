@@ -9,7 +9,7 @@
       <template #right>
         <UButton
           v-if="auth.isAuthenticated"
-          color="red"
+          color="success"
           variant="ghost"
           @click="logout"
         >

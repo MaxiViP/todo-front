@@ -1,4 +1,3 @@
-// stores/tasks.ts
 import { defineStore } from "pinia";
 import { useDebounceFn } from "@vueuse/core";
 
@@ -8,9 +7,11 @@ export const useTasksStore = defineStore("tasks", () => {
   const error = ref<string | null>(null);
 
   const search = ref("");
-  const filterStatus = ref<string>("");
+  const filterStatus = ref<boolean | null>(null); // ✅ boolean | null
   const sortBy = ref<"date" | "status">("date");
   const page = ref(1);
+  const limit = ref(6);
+  const total = ref(0);
 
   const { $api } = useNuxtApp();
 
@@ -19,33 +20,29 @@ export const useTasksStore = defineStore("tasks", () => {
     error.value = null;
 
     try {
-      const res = await $api.get("/tasks", {
+      const { data } = await $api.get("/tasks", {
         params: {
-          search: search.value || undefined,
-          status: filterStatus.value || undefined,
           page: page.value,
-          limit: 15,
+          limit: limit.value,
+          search: search.value,
+          status: filterStatus.value ?? undefined, // ✅ чисто и правильно
+          sort: sortBy.value,
         },
       });
-      tasks.value = res.data;
+
+      tasks.value = data.tasks || [];
+      total.value = data.total || 0;
     } catch (e: any) {
-      console.error(e);
-
-      if (e.response?.status === 401) {
-        const auth = useAuthStore();
-        auth.logout();
-        return;
-      }
-
-      error.value = e.response?.data?.message || "Ошибка при загрузке задач";
+      error.value = e.message || "Ошибка загрузки";
     } finally {
       loading.value = false;
     }
   };
 
   const createTask = async (taskData: any) => {
+    console.log("API POST /tasks:", taskData);
     await $api.post("/tasks", taskData);
-    await fetchTasks();
+    await fetchTasks(); // ✅ один fetch
   };
 
   const updateTask = async (id: string, updates: any) => {
@@ -58,6 +55,7 @@ export const useTasksStore = defineStore("tasks", () => {
     await fetchTasks();
   };
 
+  // debounce
   const debouncedFetch = useDebounceFn(fetchTasks, 350);
 
   watch([search, filterStatus, sortBy], () => {
@@ -73,6 +71,8 @@ export const useTasksStore = defineStore("tasks", () => {
     filterStatus,
     sortBy,
     page,
+    limit,
+    total,
     fetchTasks,
     createTask,
     updateTask,

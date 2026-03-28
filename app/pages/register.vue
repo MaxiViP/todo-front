@@ -46,7 +46,7 @@
 
         <UButton
           type="submit"
-          color="green"
+          color="success"
           size="lg"
           class="w-full"
           :loading="loading"

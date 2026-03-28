@@ -6,9 +6,10 @@ export default defineNuxtPlugin(() => {
   });
 
   api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (process.client) {
+      // только на клиенте
+      const token = localStorage.getItem("token");
+      if (token) config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   });
@@ -16,7 +17,7 @@ export default defineNuxtPlugin(() => {
   api.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err.response?.status === 401) {
+      if (err.response?.status === 401 && process.client) {
         localStorage.removeItem("token");
         navigateTo("/login");
       }

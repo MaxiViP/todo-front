@@ -10,11 +10,11 @@
       {{ task.description }}
     </p>
 
-    <div class="mt-auto pt-4 flex gap-2">
+    <div v-if="canManage" class="mt-auto pt-4 flex gap-2">
       <UButton size="sm" variant="outline" @click="$emit('edit', task)">
         ✏️ Редактировать
       </UButton>
-      <UButton size="sm" color="red" variant="ghost" @click="$emit('delete', task.id)">
+      <UButton size="sm" color="success" variant="ghost" @click="$emit('delete', task.id)">
         🗑 Удалить
       </UButton>
     </div>
@@ -24,10 +24,20 @@
 <script setup lang="ts">
 const props = defineProps<{ task: any }>()
 const emit = defineEmits(['edit', 'delete'])
+const auth = useAuthStore()
+
+const canManage = computed(() => {
+  return auth.user?.role === 'admin' || auth.user?.id === props.task.userId
+})
 
 const localCompleted = ref(props.task.isCompleted)
 
+const tasksStore = useTasksStore()
 const toggleComplete = async () => {
-  // Можно сразу обновить через store
+  await tasksStore.updateTask(props.task.id, { isCompleted: localCompleted.value })
+  watch(
+  () => props.task.isCompleted,
+  (v) => (localCompleted.value = v)
+)
 }
 </script>

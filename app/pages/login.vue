@@ -12,7 +12,7 @@
           <UInput v-model="password" type="password" placeholder="••••••••" size="lg" />
         </UFormField>
 
-        <UButton type="submit" color="green" size="lg" class="w-full" :loading="loading">
+        <UButton type="submit" color="success" size="lg" class="w-full" :loading="loading">
           Войти
         </UButton>
       </form>
