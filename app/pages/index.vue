@@ -163,13 +163,14 @@
       />
     </UModal>
   </div>
+  <TaskSkeleton v-if="tasksStore.loading" v-for="i in 6" :key="i" />
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useDebounceFn, onClickOutside } from "@vueuse/core";
 import { useTasksStore } from "@/stores/tasks";
-
+import { definePageMeta } from '#imports';
 import UModal from "@/components/ui/AppModal.vue";
 import TaskCard from "@/components/task/TaskCard.vue";
 import TaskForm from "@/components/task/TaskForm.vue";
@@ -177,10 +178,15 @@ import UButton from "@/components/ui/UButton.vue";
 import UCard from "@/components/ui/UCard.vue";
 import UInput from "@/components/ui/UInput.vue";
 import AppSpinner from "@/components/ui/AppSpinner.vue";
+import { useDropdown } from '@/composables/useDropdown';
+
 
 definePageMeta({ middleware: "auth" });
 
 const tasksStore = useTasksStore();
+
+const sortDropdown = useDropdown();
+const statusDropdown = useDropdown();
 
 // =====================
 // STATE
@@ -283,17 +289,25 @@ const closeModal = () => {
 };
 
 const handleSave = async (formData: any) => {
-  if (editingTask.value?.id) {
-    await tasksStore.updateTask(editingTask.value.id, formData);
-  } else {
-    await tasksStore.createTask(formData);
+  try {
+    if (editingTask.value?.id) {
+      await tasksStore.updateTask(editingTask.value.id, formData);
+    } else {
+      await tasksStore.createTask(formData);
+    }
+    closeModal();
+  } catch (e) {
+    console.error(e);
   }
-  closeModal();
 };
 
 const deleteTask = async (id: string) => {
-  if (confirm("Удалить задачу?")) {
+  if (!confirm("Удалить задачу?")) return;
+
+  try {
     await tasksStore.deleteTask(id);
+  } catch (e) {
+    console.error(e);
   }
 };
 

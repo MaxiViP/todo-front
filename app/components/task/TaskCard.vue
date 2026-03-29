@@ -64,8 +64,21 @@
 import { ref, computed, watch } from "vue";
 import { useTasksStore } from "@/stores/tasks";
 import { useAuthStore } from "@/stores/auth";
+import { formatDate } from "@/utils/date";
 
-const props = defineProps<{ task: any }>();
+import type { Task } from "@/types/task";
+const props = defineProps<{ task: Task }>();
+
+import { priorityMap } from "@/utils/priority";
+
+const priority = computed(() => props.task.priority || "normal");
+
+const priorityData = computed(() => priorityMap[priority.value]);
+
+const priorityLabel = computed(() => priorityData.value.label);
+const priorityIcon = computed(() => priorityData.value.icon);
+const priorityClass = computed(() => priorityData.value.class);
+
 const emit = defineEmits(["edit", "delete"]);
 
 const auth = useAuthStore();
@@ -82,65 +95,18 @@ watch(
   (v) => (localCompleted.value = v),
 );
 
-const priority = computed(() => props.task.priority || "normal");
-
-const priorityLabel = computed(() => {
-  switch (priority.value) {
-    case "low":
-      return "Низкий";
-    case "high":
-      return "Высокий";
-    default:
-      return "Обычный";
-  }
-});
-
-const priorityIcon = computed(() => {
-  switch (priority.value) {
-    case "low":
-      return "🔽";
-    case "high":
-      return "🔺";
-    default:
-      return "➡️";
-  }
-});
-
-const priorityClass = computed(() => {
-  switch (priority.value) {
-    case "low":
-      return "bg-green-100 text-green-800";
-    case "high":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-});
-
-const formattedDueDate = computed(() => {
-  if (!props.task.dueDate) return "";
-  try {
-    const date = new Date(props.task.dueDate);
-    if (isNaN(date.getTime())) return props.task.dueDate; // fallback
-    return date.toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "numeric",
-      year: "numeric",
-    });
-  } catch {
-    return props.task.dueDate;
-  }
-});
-
+const formattedDueDate = computed(() => formatDate(props.task.dueDate));
 const toggleComplete = async () => {
-  localCompleted.value = !localCompleted.value;
+  const prev = localCompleted.value;
+
+  localCompleted.value = !prev;
+
   try {
     await tasksStore.updateTask(props.task.id, {
       isCompleted: localCompleted.value,
     });
   } catch (err) {
-    console.error("Ошибка обновления статуса задачи:", err);
-    localCompleted.value = !localCompleted.value;
+    localCompleted.value = prev;
   }
 };
 </script>

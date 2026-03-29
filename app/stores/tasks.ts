@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import { useDebounceFn } from "@vueuse/core";
-import { useAuthStore } from "@/stores/auth"; // предполагаем, что у тебя есть auth store
+import { useAuthStore } from "@/stores/auth";
+import type { Task } from "@/types/task";
+import { useNuxtApp } from "#app";
 
 export const useTasksStore = defineStore("tasks", () => {
-  const tasks = ref<any[]>([]);
+  const tasks = ref<Task[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -66,34 +68,30 @@ export const useTasksStore = defineStore("tasks", () => {
   };
 
   const deleteTask = async (id: string) => {
-    await $api.delete(`/tasks/${id}`);
-    await fetchTasks();
-  };
+    const prev = [...tasks.value];
 
+    // 💥 сразу удаляем
+    tasks.value = tasks.value.filter((t) => t.id !== id);
+
+    try {
+      await $api.delete(`/tasks/${id}`);
+    } catch (e) {
+      // rollback
+      tasks.value = prev;
+      throw e;
+    }
+  };
   // Debounce только для поиска
   const debouncedSearch = useDebounceFn(() => {
     fetchTasks();
   }, 350);
 
-  // Поиск → сбрасываем страницу + debounced запрос
-  watch(search, () => {
-    page.value = 1;
-    debouncedSearch();
-  });
-
-  // Смена фильтра или сортировки → сбрасываем на 1 страницу
-  watch([filterStatus, sortBy], () => {
-    page.value = 1;
-    fetchTasks();
-  });
-
-  // Смена страницы (пагинация)
   watch(
-    page,
+    () => [page.value, search.value, sortBy.value, filterStatus.value],
     () => {
       fetchTasks();
     },
-    { immediate: true }, // ← начальная загрузка
+    { deep: true },
   );
 
   return {

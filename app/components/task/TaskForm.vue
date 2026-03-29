@@ -92,8 +92,10 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
+import type { Task } from "@/types/task";
+import { priorityMap } from "@/utils/priority";
 
-const props = defineProps<{ initial?: any }>();
+const props = defineProps<{ initial?: Partial<Task> }>();
 
 const emit = defineEmits<{
   (e: "save", data: any): void;
@@ -102,12 +104,12 @@ const emit = defineEmits<{
 
 const dropdownOpen = ref(false);
 
-// Приоритеты
-const priorityOptions = [
-  { value: "low", label: "Низкий" },
-  { value: "normal", label: "Обычный" },
-  { value: "high", label: "Высокий" },
-];
+
+
+const priorityOptions = Object.entries(priorityMap).map(([value, data]) => ({
+  value,
+  label: data.label,
+}));
 
 // Форма
 const form = reactive({

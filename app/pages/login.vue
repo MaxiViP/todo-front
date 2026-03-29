@@ -158,6 +158,7 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useHead } from "#imports";
 
 const auth = useAuthStore();
 

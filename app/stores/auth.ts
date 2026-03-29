@@ -1,5 +1,7 @@
 // stores/auth.ts
 import { defineStore } from "pinia";
+import { ref, computed } from "vue"; // 🔹 ref и computed
+import { useNuxtApp, navigateTo } from "#imports"; // 🔹 Nuxt функции
 
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<string | null>(null);

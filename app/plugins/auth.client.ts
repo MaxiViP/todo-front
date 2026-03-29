@@ -1,8 +1,12 @@
 // plugins/auth.client.ts
-export default defineNuxtPlugin(async () => {
-  const auth = useAuthStore();
+import { defineNuxtPlugin } from "#imports"; // 🔹 добавляем импорт
 
-  if (process.client) {
-    await auth.init();
-  }
+export default defineNuxtPlugin(() => {
+  return {
+    provide: {
+      toast: (msg: string) => {
+        console.log("🔔", msg); // пока заглушка
+      },
+    },
+  };
 });

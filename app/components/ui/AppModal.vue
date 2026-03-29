@@ -1,6 +1,10 @@
 <template>
   <transition name="fade">
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      aria-describedby="modal-desc"
       v-if="modelValue"
       class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
       @click.self="close"
@@ -21,12 +25,11 @@
           </button>
 
           <!-- Заголовок -->
-          <h2 v-if="title" class="text-xl font-semibold mb-4">
-            {{ title }}
+          <h2 id="modal-title">{{ title }}  
           </h2>
 
           <!-- Контент -->
-          <div class="space-y-4">
+          <div id="modal-desc" class="space-y-4">
             <slot />
           </div>
         </div>
@@ -37,17 +40,17 @@
 
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue: boolean
-  title?: string
-}>()
+  modelValue: boolean;
+  title?: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-}>()
+  (e: "update:modelValue", value: boolean): void;
+}>();
 
 const close = () => {
-  emit('update:modelValue', false)
-}
+  emit("update:modelValue", false);
+};
 </script>
 
 <style scoped>
@@ -67,10 +70,14 @@ const close = () => {
 
 /* Анимация скейла для контента */
 .scale-fade-enter-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 .scale-fade-leave-active {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 .scale-fade-enter-from {
   transform: scale(0.95);

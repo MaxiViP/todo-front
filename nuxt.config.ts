@@ -6,9 +6,7 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true }, // можно отключить в production: process.env.NODE_ENV === 'production' ? false : true
-
-  // ⚠️ Если main.css содержит только Tailwind – удалите эту строку, так как @nuxt/ui сам подключает Tailwind.
-  // Если там свои стили – оставьте, но убедитесь, что они не дублируются.
+ 
   css: ["~/assets/css/main.css"],
 
   ui: {

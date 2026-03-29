@@ -69,6 +69,10 @@
 </template>
 
 <script setup lang="ts">
+import { ref, reactive } from "vue";
+import { useNuxtApp, navigateTo } from "#imports"; // Nuxt 4 helpers
+import { useAuthStore } from "@/stores/auth";
+
 const form = reactive({
   email: "",
   password: "",
@@ -105,10 +109,9 @@ const handleRegister = async () => {
 
     // Автоматический вход после регистрации
     if (res.data.token) {
-      localStorage.setItem("token", res.data.token);
+      auth.loginWithToken(res.data.token, res.data.user);
       await navigateTo("/");
     } else {
-      // Если токен не вернулся — логинимся вручную
       await auth.login(form.email, form.password);
     }
   } catch (err: any) {

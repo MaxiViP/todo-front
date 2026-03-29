@@ -1,15 +1,17 @@
 // plugins/api.client.ts
+import { defineNuxtPlugin } from "#imports"; // 🔹 Nuxt 4
 import axios from "axios";
+import { useAuthStore } from "@/stores/auth"; // 🔹 Pinia store
 
 export default defineNuxtPlugin(() => {
-  const api = axios.create({
-    baseURL: "http://localhost:3001/api",
-    withCredentials: true, // 🔥 обязательно для cookie
-  });
-
   const authStore = useAuthStore();
 
-  // 👉 Добавляем access token
+  const api = axios.create({
+    baseURL: "http://localhost:3001/api",
+    withCredentials: true, // обязательно для cookie
+  });
+
+  // Добавляем access token к каждому запросу
   api.interceptors.request.use((config) => {
     if (authStore.token) {
       config.headers.Authorization = `Bearer ${authStore.token}`;
@@ -17,13 +19,13 @@ export default defineNuxtPlugin(() => {
     return config;
   });
 
+  // Обработка 401 и refresh token
   api.interceptors.response.use(
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
       if (!originalRequest) return Promise.reject(error);
 
-      // 🔥 Не пытаемся обновить токен, если это сам запрос refresh
       const isRefreshRequest = originalRequest.url?.includes("/auth/refresh");
 
       if (
@@ -43,6 +45,7 @@ export default defineNuxtPlugin(() => {
         }
         await authStore.logout();
       }
+
       return Promise.reject(error);
     },
   );
