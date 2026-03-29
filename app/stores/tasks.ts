@@ -7,15 +7,17 @@ export const useTasksStore = defineStore("tasks", () => {
   const error = ref<string | null>(null);
 
   const search = ref("");
-  const filterStatus = ref<boolean | null>(null); // ✅ boolean | null
+  const filterStatus = ref<string>("");
   const sortBy = ref<"date" | "status">("date");
   const page = ref(1);
-  const limit = ref(6);
+  const limit = ref(12);
   const total = ref(0);
 
   const { $api } = useNuxtApp();
 
   const fetchTasks = async () => {
+    if (!useAuthStore().isAuthenticated) return;
+    console.log("FETCH PAGE:", page.value);
     loading.value = true;
     error.value = null;
 
@@ -55,12 +57,27 @@ export const useTasksStore = defineStore("tasks", () => {
     await fetchTasks();
   };
 
-  // debounce
-  const debouncedFetch = useDebounceFn(fetchTasks, 350);
+  // debounce только для поиска
+  const debouncedSearch = useDebounceFn(() => {
+    fetchTasks();
+  }, 350);
 
-  watch([search, filterStatus, sortBy], () => {
+  watch(
+    page,
+    () => {
+      fetchTasks();
+    },
+    { immediate: true },
+  );
+
+  watch([filterStatus, sortBy], () => {
     page.value = 1;
-    debouncedFetch();
+  });
+
+  // поиск
+  watch(search, () => {
+    page.value = 1;
+    debouncedSearch();
   });
 
   return {

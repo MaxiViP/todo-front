@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useTasksStore } from "~/stores/tasks";
 
 const tasks = useTasksStore();
 
@@ -57,9 +58,3 @@ const status = computed({
   },
 });
 </script>
-
-<style scoped>
-.filters-container {
-  /* Дополнительные стили при необходимости */
-}
-</style>

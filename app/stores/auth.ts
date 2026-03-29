@@ -7,32 +7,84 @@ export const useAuthStore = defineStore("auth", () => {
 
   const isAuthenticated = computed(() => !!token.value);
 
-  const init = () => {
-    if (process.client) {
-      // <- проверка клиента
-      const savedToken = localStorage.getItem("token");
-      if (savedToken) token.value = savedToken;
+  // 🔁 REFRESH (через axios)
+  const restoreSession = async (): Promise<boolean> => {
+    if (!process.client) return false;
+
+    try {
+      const { $api } = useNuxtApp();
+
+      const res = await $api.post("/auth/refresh");
+
+      token.value = res.data.token;
+      user.value = res.data.user;
+
+      return true;
+    } catch (err) {
+      console.error("Restore session failed:", err);
+      token.value = null;
+      user.value = null;
+      return false;
     }
   };
 
-  const login = async (email: string, password: string) => {
+  // 🚀 INIT
+  const init = async () => {
+    await restoreSession();
+  };
+
+  // 🔐 LOGIN
+  const login = async (email: string, password: string, rememberMe = false) => {
     const { $api } = useNuxtApp();
-    const { data } = await $api.post("/auth/login", { email, password });
 
-    token.value = data.token;
-    if (data.user) user.value = data.user;
+    try {
+      const res = await $api.post("/auth/login", {
+        email,
+        password,
+        rememberMe,
+      });
 
-    if (process.client) localStorage.setItem("token", data.token);
+      token.value = res.data.token;
+      user.value = res.data.user;
+
+      await navigateTo("/");
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
+  // 🔳 QR LOGIN
+  const loginWithToken = async (newToken: string, newUser?: any) => {
+    token.value = newToken;
+    if (newUser) user.value = newUser;
 
     await navigateTo("/");
   };
 
-  const logout = () => {
+  // 🚪 LOGOUT
+  const logout = async () => {
+    const { $api } = useNuxtApp();
+
+    try {
+      await $api.post("/auth/logout");
+    } catch (e) {
+      // игнор
+    }
+
     token.value = null;
     user.value = null;
-    if (process.client) localStorage.removeItem("token");
-    navigateTo("/login", { replace: true });
+
+    await navigateTo("/login", { replace: true });
   };
 
-  return { token, user, isAuthenticated, init, login, logout };
+  return {
+    token,
+    user,
+    isAuthenticated,
+    init,
+    login,
+    loginWithToken,
+    logout,
+    restoreSession,
+  };
 });

@@ -1,5 +1,6 @@
 export default defineNuxtConfig({
   modules: ["@pinia/nuxt", "@nuxt/ui"],
+
   devtools: { enabled: true },
 
   css: ["~/assets/css/main.css"],
@@ -8,6 +9,12 @@ export default defineNuxtConfig({
     primary: "green",
     neutral: "slate",
   },
+
+  // Плагины — теперь оба важны
+  plugins: [
+    "~/plugins/auth.client", // сначала auth (init)
+    "~/plugins/api.client", // потом api (зависит от authStore)
+  ],
 
   vite: {
     optimizeDeps: {

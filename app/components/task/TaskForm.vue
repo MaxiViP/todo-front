@@ -5,15 +5,14 @@
       v-model="form.title"
       label="Название"
       required
-      class="bg-gray-50 border border-gray-300 focus:border-green-400 focus:ring-1 focus:ring-green-300 rounded-md"
+      class="w-full bg-gray-50 border border-gray-300 focus:border-green-400 focus:ring-1 focus:ring-green-300 rounded-md"
     />
 
-    <!-- Описание -->
     <UTextarea
       v-model="form.description"
       label="Описание"
       :rows="3"
-      class="bg-gray-50 border border-gray-300 focus:border-green-400 focus:ring-1 focus:ring-green-300 rounded-md"
+      class="w-full bg-gray-50 border border-gray-300 focus:border-green-400 focus:ring-1 focus:ring-green-300 rounded-md"
     />
 
     <!-- Срок выполнения -->
@@ -153,9 +152,7 @@ const submit = () => {
 
   emit("save", {
     ...form,
-    dueDate: form.dueDate
-      ? new Date(form.dueDate).toISOString()
-      : null,
+    dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : null,
   });
 };
 </script>

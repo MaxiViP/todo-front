@@ -1,7 +1,9 @@
 <template>
   <div>
     <!-- Фильтры и поиск -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"
+    >
       <UInput
         v-model="search"
         placeholder="Поиск по названию..."
@@ -19,7 +21,10 @@
     </div>
 
     <!-- Ошибка -->
-    <div v-if="tasksStore.error" class="text-red-600 mb-4 p-3 bg-red-50 rounded">
+    <div
+      v-if="tasksStore.error"
+      class="text-red-600 mb-4 p-3 bg-red-50 rounded"
+    >
       {{ tasksStore.error }}
     </div>
 
@@ -47,12 +52,18 @@
 
     <!-- Пагинация -->
     <div v-if="tasksStore.tasks?.length" class="flex justify-center mt-6 gap-2">
-      <UButton :disabled="tasksStore.page === 1" @click="prevPage">Назад</UButton>
-      <span class="px-3 py-1 font-medium">{{ tasksStore.page }} / {{ totalPages }}</span>
-      <UButton :disabled="tasksStore.page >= totalPages" @click="nextPage">Вперёд</UButton>
+      <UButton :disabled="tasksStore.page === 1" @click="prevPage"
+        >Назад</UButton
+      >
+      <span class="px-3 py-1 font-medium"
+        >{{ tasksStore.page }} / {{ totalPages }}</span
+      >
+      <UButton :disabled="tasksStore.page >= totalPages" @click="nextPage"
+        >Вперёд</UButton
+      >
     </div>
 
-    <!-- Модалка -->
+    <!-- Модальное окно -->
     <UModal
       v-model="showModal"
       :title="editingTask ? 'Редактировать задачу' : 'Новая задача'"
@@ -79,16 +90,23 @@ import UButton from "@/components/ui/UButton.vue";
 import UCard from "@/components/ui/UCard.vue";
 import UInput from "@/components/ui/UInput.vue";
 import USelect from "@/components/ui/USelect.vue";
+import AppSpinner from "@/components/ui/AppSpinner.vue";
 
 definePageMeta({ middleware: "auth" });
 
 const tasksStore = useTasksStore();
 const showModal = ref(false);
 const editingTask = ref<any>(null);
-const search = ref(tasksStore.search);
+const search = computed({
+  get: () => tasksStore.search,
+  set: (val) => {
+    tasksStore.page = 1;
+    tasksStore.search = val;
+  },
+});
 
 const totalPages = computed(() =>
-  tasksStore.limit ? Math.ceil(tasksStore.total / tasksStore.limit) : 1
+  tasksStore.limit ? Math.ceil(tasksStore.total / tasksStore.limit) : 1,
 );
 
 const debouncedFetch = useDebounceFn(() => {
@@ -97,29 +115,15 @@ const debouncedFetch = useDebounceFn(() => {
   tasksStore.fetchTasks();
 }, 400);
 
-watch(search, debouncedFetch);
-
-watch(
-  [() => tasksStore.filterStatus, () => tasksStore.sortBy],
-  () => {
-    tasksStore.page = 1;
-    tasksStore.fetchTasks();
-  }
-);
-
-onMounted(() => tasksStore.fetchTasks());
-
 // Pagination
 const prevPage = () => {
   if (tasksStore.page > 1) {
     tasksStore.page--;
-    tasksStore.fetchTasks();
   }
 };
 const nextPage = () => {
   if (tasksStore.page < totalPages.value) {
     tasksStore.page++;
-    tasksStore.fetchTasks();
   }
 };
 
@@ -149,11 +153,11 @@ const deleteTask = async (id: string) => {
   if (confirm("Удалить задачу?")) await tasksStore.deleteTask(id);
 };
 
-// Options
+// Options – исправлено: строковые значения для статуса
 const statusOptions = [
-  { value: null, label: "Все задачи" },
-  { value: false, label: "Активные" },
-  { value: true, label: "Выполненные" },
+  { value: "", label: "Все задачи" },
+  { value: "false", label: "Активные" },
+  { value: "true", label: "Выполненные" },
 ];
 const sortOptions = [
   { value: "date", label: "По дате" },

@@ -1,6 +1,7 @@
-// useDebounce.ts;
-import { debounce } from "lodash";
-
 export const useDebounce = (fn: Function, delay = 500) => {
-  return debounce(fn, delay);
+  let timer: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
 };
