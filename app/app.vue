@@ -8,57 +8,68 @@
       </template>
 
       <template #right>
-        <div class="relative">
-          <!-- Большие экраны: имя -->
-          <div ref="userButton">
-            <!-- Большие экраны -->
-            <UButton
-              v-if="auth.isAuthenticated && !isMobile"
-              variant="ghost"
-              color="success"
-              @click="toggleUserMenu"
-            >
-              {{ auth.user?.name || "Пользователь" }}
-            </UButton>
+        <div class="relative" ref="userButton">
+          <!-- Большие экраны: показываем текст в зависимости от роли -->
+          <UButton
+            v-if="auth.isAuthenticated && !isMobile"
+            variant="ghost"
+            color="success"
+            @click="toggleUserMenu"
+          >
+            {{
+              auth.user?.role === "admin"
+                ? "Администратор"
+                : auth.user?.email || "Пользователь"
+            }}
+          </UButton>
 
-            <!-- Малые экраны -->
-            <UButton
-              v-if="auth.isAuthenticated && isMobile"
-              variant="ghost"
-              color="success"
-              @click="toggleUserMenu"
-            >
-              <UIcon
-                :name="
-                  auth.user?.role === 'admin'
-                    ? 'i-lucide-shield'
-                    : 'i-lucide-user'
-                "
-              />
-            </UButton>
-          </div>
+          <!-- Малые экраны: только иконка -->
+          <UButton
+            v-if="auth.isAuthenticated && isMobile"
+            variant="ghost"
+            color="success"
+            @click="toggleUserMenu"
+          >
+            <UIcon
+              :name="
+                auth.user?.role === 'admin'
+                  ? 'i-lucide-shield-check'
+                  : 'i-lucide-user'
+              "
+              class="w-5 h-5"
+            />
+          </UButton>
 
-          <!-- Попап меню под кнопкой -->
+          <!-- Попап меню -->
           <div
             v-if="showUserMenu"
-            class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border rounded shadow-lg z-50"
+            class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 py-1"
           >
-            <p
-              class="px-4 py-2 border-b dark:border-gray-700 text-gray-700 dark:text-gray-200"
-            >
-              {{ auth.user?.name || "Пользователь" }}
-            </p>
+            <div class="px-4 py-3 border-b dark:border-gray-700">
+              <p class="font-medium">
+                {{ auth.user?.email || "Пользователь" }}
+              </p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{
+                  auth.user?.role === "admin" ? "Администратор" : "Пользователь"
+                }}
+              </p>
+            </div>
+
             <button
-              class="w-full text-left px-4 py-2 hover:bg-red-100 dark:hover:bg-red-700 text-red-600 dark:text-red-400"
-              @click="logoutAndClose"
-            >
-              Выйти
-            </button>
-            <button
-              class="w-full text-left px-4 py-2 hover:bg-blue-100 dark:hover:bg-blue-700 text-blue-600 dark:text-blue-400"
+              class="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 flex items-center gap-2"
               @click="switchUser"
             >
+              <UIcon name="i-lucide-log-in" class="w-4 h-4" />
               Сменить пользователя
+            </button>
+
+            <button
+              class="w-full text-left px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center gap-2"
+              @click="logoutAndClose"
+            >
+              <UIcon name="i-lucide-log-out" class="w-4 h-4" />
+              Выйти
             </button>
           </div>
         </div>

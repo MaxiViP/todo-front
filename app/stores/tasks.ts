@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
+import { ref, watch } from "vue";
 import { useDebounceFn } from "@vueuse/core";
+import { useAuthStore } from "@/stores/auth"; // предполагаем, что у тебя есть auth store
 
 export const useTasksStore = defineStore("tasks", () => {
   const tasks = ref<any[]>([]);
@@ -15,9 +17,19 @@ export const useTasksStore = defineStore("tasks", () => {
 
   const { $api } = useNuxtApp();
 
+  // Основной запрос
   const fetchTasks = async () => {
     if (!useAuthStore().isAuthenticated) return;
-    console.log("FETCH PAGE:", page.value);
+
+    console.log(
+      "📡 FETCH TASKS → page:",
+      page.value,
+      "search:",
+      search.value,
+      "status:",
+      filterStatus.value,
+    );
+
     loading.value = true;
     error.value = null;
 
@@ -26,8 +38,8 @@ export const useTasksStore = defineStore("tasks", () => {
         params: {
           page: page.value,
           limit: limit.value,
-          search: search.value,
-          status: filterStatus.value ?? undefined, // ✅ чисто и правильно
+          search: search.value || undefined,
+          status: filterStatus.value || undefined,
           sort: sortBy.value,
         },
       });
@@ -35,16 +47,17 @@ export const useTasksStore = defineStore("tasks", () => {
       tasks.value = data.tasks || [];
       total.value = data.total || 0;
     } catch (e: any) {
-      error.value = e.message || "Ошибка загрузки";
+      console.error(e);
+      error.value = e.message || "Ошибка загрузки задач";
     } finally {
       loading.value = false;
     }
   };
 
+  // Мутации (после успеха сразу обновляем список)
   const createTask = async (taskData: any) => {
-    console.log("API POST /tasks:", taskData);
     await $api.post("/tasks", taskData);
-    await fetchTasks(); // ✅ один fetch
+    await fetchTasks();
   };
 
   const updateTask = async (id: string, updates: any) => {
@@ -57,28 +70,31 @@ export const useTasksStore = defineStore("tasks", () => {
     await fetchTasks();
   };
 
-  // debounce только для поиска
+  // Debounce только для поиска
   const debouncedSearch = useDebounceFn(() => {
     fetchTasks();
   }, 350);
 
+  // Поиск → сбрасываем страницу + debounced запрос
+  watch(search, () => {
+    page.value = 1;
+    debouncedSearch();
+  });
+
+  // Смена фильтра или сортировки → сбрасываем на 1 страницу
+  watch([filterStatus, sortBy], () => {
+    page.value = 1;
+    fetchTasks();
+  });
+
+  // Смена страницы (пагинация)
   watch(
     page,
     () => {
       fetchTasks();
     },
-    { immediate: true },
+    { immediate: true }, // ← начальная загрузка
   );
-
-  watch([filterStatus, sortBy], () => {
-    page.value = 1;
-  });
-
-  // поиск
-  watch(search, () => {
-    page.value = 1;
-    debouncedSearch();
-  });
 
   return {
     tasks,
