@@ -1,5 +1,9 @@
 export default defineNuxtConfig({
-  modules: ["@pinia/nuxt", "@nuxt/ui"],
+  modules: ["@pinia/nuxt", "@nuxt/ui", "@nuxt/icon"],
+
+  icon: {
+    collections: ['lucide']
+  },
 
   devtools: { enabled: true },
 

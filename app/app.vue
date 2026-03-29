@@ -6,10 +6,8 @@
       <template #left>
         <h1 class="text-2xl font-semibold tracking-tight">ToDo App</h1>
       </template>
-
       <template #right>
         <div class="relative" ref="userButton">
-          <!-- Большие экраны: показываем текст в зависимости от роли -->
           <UButton
             v-if="auth.isAuthenticated && !isMobile"
             variant="ghost"

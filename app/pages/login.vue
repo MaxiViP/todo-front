@@ -63,18 +63,65 @@
         </form>
       </div>
 
-      <!-- QR-вход -->
-      <div v-else class="text-center space-y-4">
+      <!-- QR-вход → ЗАГЛУШКА (демо-режим) -->
+      <div v-else class="text-center space-y-6">
         <p class="text-gray-700 dark:text-gray-300">
           Отсканируйте QR-код мобильным приложением
         </p>
-        <canvas ref="qrCanvas" class="mx-auto"></canvas>
-        <p class="text-sm text-gray-500">
-          Используйте приложение для аутентификации (Google Authenticator и др.)
-        </p>
-        <UButton variant="ghost" @click="cancelQrLogin">
+
+        <!-- Заглушка вместо canvas -->
+        <div
+          class="mx-auto w-52 h-52 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex flex-col items-center justify-center bg-white dark:bg-gray-900 shadow-inner cursor-pointer hover:border-green-500 transition-colors"
+          @click="demoQrClick"
+        >
+          <div class="text-center px-6">
+            <UIcon name="i-heroicons-qr-code" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
+            <p class="font-medium text-gray-500 dark:text-gray-400 mb-1">Заглушка QR-кода</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">Демо-режим</p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-sm font-medium text-gray-500">Или выберите тестового пользователя:</p>
+
+          <!-- Кнопка Admin -->
+          <button
+            @click="demoLoginAs('admin')"
+            class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl transition-all active:scale-[0.97]"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center text-sm font-bold">A</div>
+              <div class="text-left">
+                <p class="font-semibold">Admin</p>
+                <p class="text-xs text-gray-500">admin@test.com / admin123</p>
+              </div>
+            </div>
+            <UIcon name="i-heroicons-arrow-right" class="w-5 h-5 text-gray-400" />
+          </button>
+
+          <!-- Кнопка User -->
+          <button
+            @click="demoLoginAs('user')"
+            class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl transition-all active:scale-[0.97]"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-sm font-bold">U</div>
+              <div class="text-left">
+                <p class="font-semibold">User</p>
+                <p class="text-xs text-gray-500">user@test.com / 123456</p>
+              </div>
+            </div>
+            <UIcon name="i-heroicons-arrow-right" class="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+
+        <UButton variant="ghost" @click="cancelQrLogin" class="mt-2">
           Назад к входу
         </UButton>
+
+        <p class="text-xs text-gray-400">
+          (В реальном приложении здесь был бы настоящий QR-код)
+        </p>
       </div>
 
       <div class="text-center text-sm text-gray-500 mt-6">
@@ -90,7 +137,6 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import QRCode from "qrcode";
 
 const auth = useAuthStore();
 
@@ -100,15 +146,12 @@ const password = ref("");
 const rememberMe = ref(false);
 const loading = ref(false);
 
-// QR-вход
+// QR-вход (демо)
 const showQrCode = ref(false);
 const qrInitLoading = ref(false);
-const qrCanvas = ref<HTMLCanvasElement | null>(null);
-let pollingInterval: ReturnType<typeof setInterval> | null = null;
-let qrSessionId: string | null = null;
 
 onUnmounted(() => {
-  if (pollingInterval) clearInterval(pollingInterval);
+  // Ничего не чистим — polling удалён
 });
 
 const handleLogin = async () => {
@@ -127,92 +170,52 @@ const handleLogin = async () => {
   }
 };
 
+// Запуск «QR-входа» — просто показываем заглушку
 const startQrLogin = async () => {
   qrInitLoading.value = true;
+  // Имитация небольшой задержки (как будто запрашиваем QR)
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  showQrCode.value = true;
+  qrInitLoading.value = false;
+};
+
+// Клик по заглушке QR-кода — просто уведомление (можно убрать, если не нужно)
+const demoQrClick = () => {
+  alert("Это заглушка QR-кода.\n\nВыберите тестового пользователя ниже 👇");
+};
+
+// Автоматический вход по демо-пользователям
+const demoLoginAs = async (role: "admin" | "user") => {
+  let demoEmail = "";
+  let demoPassword = "";
+
+  if (role === "admin") {
+    demoEmail = "admin@test.com";
+    demoPassword = "admin123";
+  } else {
+    demoEmail = "user@test.com";
+    demoPassword = "123456";
+  }
+
+  showQrCode.value = false; // сразу скрываем QR-режим
+
+  loading.value = true;
   try {
-    // Имитация запроса к серверу (замените на реальный)
-    const mockResponse = await mockQrInit();
-    qrSessionId = mockResponse.sessionId;
-    const qrData = mockResponse.qrData;
-
-    if (qrCanvas.value) {
-      await QRCode.toCanvas(qrCanvas.value, qrData, {
-        width: 200,
-        margin: 2,
-        color: { dark: "#000000", light: "#ffffff" },
-      });
-    }
-
-    startPolling();
-    showQrCode.value = true;
-  } catch (error) {
-    console.error("QR init error:", error);
-    alert("Не удалось сгенерировать QR-код. Попробуйте позже.");
+    // Используем тот же метод, что и в обычном логине
+    await auth.login(demoEmail, demoPassword, true); // rememberMe = true для демо
+  } catch (err: any) {
+    alert(err.response?.data?.message || "Ошибка входа");
+    showQrCode.value = true; // если вдруг ошибка — возвращаем обратно
   } finally {
-    qrInitLoading.value = false;
+    loading.value = false;
   }
-};
-
-const startPolling = () => {
-  if (pollingInterval) clearInterval(pollingInterval);
-  pollingInterval = setInterval(async () => {
-    if (!qrSessionId) return;
-    try {
-      const status = await mockQrStatus(qrSessionId);
-      if (status.confirmed) {
-        clearPolling();
-        await auth.loginWithToken(status.token);
-        showQrCode.value = false;
-      }
-    } catch (error) {
-      console.error("QR status error:", error);
-    }
-  }, 2000);
-};
-
-const clearPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-    pollingInterval = null;
-  }
-  qrSessionId = null;
 };
 
 const cancelQrLogin = () => {
-  clearPolling();
   showQrCode.value = false;
 };
-
-// ========== MOCK-ФУНКЦИИ (замените на реальные API) ==========
-const mockQrInit = (): Promise<{ sessionId: string; qrData: string }> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const sessionId = Math.random().toString(36).substring(2, 15);
-      const qrData = `https://yourapp.com/qr?session=${sessionId}`;
-      resolve({ sessionId, qrData });
-    }, 500);
-  });
-};
-
-let mockConfirmed = false;
-const mockQrStatus = (
-  sessionId: string,
-): Promise<{ confirmed: boolean; token?: string }> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (!mockConfirmed) {
-        mockConfirmed = true;
-        resolve({
-          confirmed: true,
-          token: "mock-jwt-token-from-qr",
-        });
-      } else {
-        resolve({ confirmed: false });
-      }
-    }, 100);
-  });
-};
 </script>
+
 <style>
 .auth-qr {
   width: 150px;

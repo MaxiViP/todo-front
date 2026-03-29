@@ -1,25 +1,110 @@
 <template>
   <div>
-    <!-- Фильтры и поиск -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-      <UInput
-        v-model="search"
-        placeholder="Поиск по названию..."
-        icon="i-lucide-search"
-        class="w-full sm:w-96"
-      />
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"
+    >
+      <!-- Поиск -->
+      <div class="relative w-full sm:w-96">
+        <UInput
+          v-model="search"
+          placeholder="Поиск по названию..."
+          class="w-full pr-10"
+        />
+        <Icon
+          name="lucide:search"
+          class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        />
+      </div>
 
-      <div class="flex gap-3">
-        <USelect v-model="tasksStore.filterStatus" :options="statusOptions" />
-        <USelect v-model="tasksStore.sortBy" :options="sortOptions" />
-        <UButton icon="i-lucide-plus" @click="openModal" color="success">
-          Новая задача
+      <!-- Фильтры -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <!-- Статус -->
+        <div
+          ref="statusRef"
+          class="relative w-full sm:w-auto min-w-[160px] text-gray-400 hover:text-gray-600"
+        >
+          <button
+            @click="toggleStatus"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-left bg-white shadow-sm hover:border-green-400 flex justify-between items-center transition"
+          >
+            <span>{{ getStatusLabel(tasksStore.filterStatus) }}</span>
+            <Icon
+              name="lucide:chevron-down"
+              class="w-4 h-4 transition-transform"
+              :class="{ 'rotate-180': statusOpen }"
+            />
+          </button>
+
+          <ul
+            v-if="statusOpen"
+            class="absolute z-10 mt-1 w-full bg-white shadow-lg border rounded-md max-h-40 overflow-auto"
+          >
+            <li
+              v-for="option in statusOptions"
+              :key="option.value"
+              @click="selectStatus(option.value)"
+              class="cursor-pointer py-2 px-3 hover:bg-green-100 transition"
+            >
+              {{ option.label }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Сортировка -->
+        <div
+          ref="sortRef"
+          class="relative w-full sm:w-auto min-w-[160px] text-gray-400 hover:text-gray-600"
+        >
+          <button
+            @click="toggleSort"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-left bg-white shadow-sm hover:border-green-400 flex justify-between items-center transition"
+          >
+            <span>{{ getSortLabel(tasksStore.sortBy) }}</span>
+            <Icon
+              name="lucide:chevron-down"
+              class="w-4 h-4 transition-transform"
+              :class="{ 'rotate-180': sortOpen }"
+            />
+          </button>
+
+          <ul
+            v-if="sortOpen"
+            class="absolute z-10 mt-1 w-full bg-white shadow-lg border rounded-md max-h-40 overflow-auto"
+          >
+            <li
+              v-for="option in sortOptions"
+              :key="option.value"
+              @click="selectSort(option.value)"
+              class="cursor-pointer py-2 px-3 hover:bg-green-100 transition"
+            >
+              {{ option.label }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Кнопка -->
+        <UButton
+          @click="openModal"
+          class="w-full sm:w-auto group transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
+        >
+          <span
+            class="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-100"
+          >
+            <Icon
+              name="lucide:plus"
+              class="w-5 h-5 transition-transform duration-200 group-hover:rotate-90"
+            />
+            <span class="font-medium">Новая задача</span>
+          </span>
         </UButton>
       </div>
     </div>
 
     <!-- Ошибка -->
-    <div v-if="tasksStore.error" class="text-red-600 mb-4 p-3 bg-red-50 rounded">
+    <div
+      v-if="tasksStore.error"
+      class="text-red-600 mb-4 p-3 bg-red-50 rounded"
+    >
       {{ tasksStore.error }}
     </div>
 
@@ -30,12 +115,12 @@
 
     <!-- Пусто -->
     <UCard v-else-if="tasksStore.tasks?.length === 0" class="text-center py-12">
-      <p v-if="search">Ничего не найдено 😢</p>
-      <p v-else>Нет задач. Создайте первую!</p>
+      <p class="text-gray-900" v-if="search">Ничего не найдено 😢</p>
+      <p class="text-gray-900" v-else>Нет задач. Создайте первую!</p>
     </UCard>
 
     <!-- Сетка задач -->
-    <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div v-else class="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
       <TaskCard
         v-for="task in tasksStore.tasks"
         :key="task.id"
@@ -53,9 +138,11 @@
       >
         Назад
       </UButton>
+
       <span class="px-3 py-1 font-medium">
         {{ tasksStore.page }} / {{ totalPages }}
       </span>
+
       <UButton
         :disabled="tasksStore.loading || tasksStore.page >= totalPages"
         @click="debouncedNextPage"
@@ -64,16 +151,23 @@
       </UButton>
     </div>
 
-    <!-- Модальное окно -->
-    <UModal v-model="showModal" :title="editingTask ? 'Редактировать задачу' : 'Новая задача'">
-      <TaskForm :initial="editingTask" @save="handleSave" @cancel="closeModal" />
+    <!-- Модалка -->
+    <UModal
+      v-model="showModal"
+      :title="editingTask ? 'Редактировать задачу' : 'Новая задача'"
+    >
+      <TaskForm
+        :initial="editingTask"
+        @save="handleSave"
+        @cancel="closeModal"
+      />
     </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useDebounceFn } from "@vueuse/core";   // ← добавили
+import { useDebounceFn, onClickOutside } from "@vueuse/core";
 import { useTasksStore } from "@/stores/tasks";
 
 import UModal from "@/components/ui/AppModal.vue";
@@ -82,25 +176,41 @@ import TaskForm from "@/components/task/TaskForm.vue";
 import UButton from "@/components/ui/UButton.vue";
 import UCard from "@/components/ui/UCard.vue";
 import UInput from "@/components/ui/UInput.vue";
-import USelect from "@/components/ui/USelect.vue";
 import AppSpinner from "@/components/ui/AppSpinner.vue";
 
 definePageMeta({ middleware: "auth" });
 
 const tasksStore = useTasksStore();
+
+// =====================
+// STATE
+// =====================
 const showModal = ref(false);
 const editingTask = ref<any>(null);
 
+const sortOpen = ref(false);
+const statusOpen = ref(false);
+
+const sortRef = ref();
+const statusRef = ref();
+
+// =====================
+// SEARCH
+// =====================
 const search = computed({
   get: () => tasksStore.search,
-  set: (val) => { tasksStore.search = val; },
+  set: (val) => {
+    tasksStore.search = val;
+  },
 });
 
+// =====================
+// PAGINATION
+// =====================
 const totalPages = computed(() =>
   tasksStore.limit ? Math.ceil(tasksStore.total / tasksStore.limit) : 1,
 );
 
-// 🔥 Debounce для пагинации — полностью убирает двойные/тройные клики
 const debouncedPrevPage = useDebounceFn(() => {
   if (tasksStore.page > 1) tasksStore.page--;
 }, 80);
@@ -109,7 +219,51 @@ const debouncedNextPage = useDebounceFn(() => {
   if (tasksStore.page < totalPages.value) tasksStore.page++;
 }, 80);
 
-// Модальное окно
+// =====================
+// DROPDOWN
+// =====================
+const toggleSort = () => {
+  sortOpen.value = !sortOpen.value;
+  statusOpen.value = false;
+};
+
+const toggleStatus = () => {
+  statusOpen.value = !statusOpen.value;
+  sortOpen.value = false;
+};
+
+const selectSort = (value: string) => {
+  tasksStore.sortBy = value;
+  sortOpen.value = false;
+  tasksStore.fetchTasks();
+};
+
+const selectStatus = (value: string) => {
+  tasksStore.filterStatus = value;
+  statusOpen.value = false;
+  tasksStore.fetchTasks();
+};
+
+// =====================
+// LABELS
+// =====================
+const getSortLabel = (value: string) => {
+  return sortOptions.find((o) => o.value === value)?.label || "По дате";
+};
+
+const getStatusLabel = (value: string) => {
+  return statusOptions.find((o) => o.value === value)?.label || "Все задачи";
+};
+
+// =====================
+// OUTSIDE CLICK
+// =====================
+onClickOutside(sortRef, () => (sortOpen.value = false));
+onClickOutside(statusRef, () => (statusOpen.value = false));
+
+// =====================
+// MODAL
+// =====================
 const openModal = () => {
   editingTask.value = null;
   showModal.value = true;
@@ -140,6 +294,9 @@ const deleteTask = async (id: string) => {
   }
 };
 
+// =====================
+// OPTIONS
+// =====================
 const statusOptions = [
   { value: "", label: "Все задачи" },
   { value: "false", label: "Активные" },
@@ -153,7 +310,6 @@ const sortOptions = [
 </script>
 
 <style>
-
 .card {
   height: -webkit-fill-available;
   display: flex;
