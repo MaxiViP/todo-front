@@ -233,11 +233,14 @@ const toggleStatus = () => {
 };
 
 const selectSort = (value: string) => {
-  tasksStore.sortBy = value;
-  sortOpen.value = false;
-  tasksStore.fetchTasks();
+  if (value === "date" || value === "status") {
+    tasksStore.sortBy = value;
+    sortOpen.value = false;
+    tasksStore.fetchTasks();
+  } else {
+    console.warn("Недопустимое значение сортировки:", value);
+  }
 };
-
 const selectStatus = (value: string) => {
   tasksStore.filterStatus = value;
   statusOpen.value = false;

@@ -75,14 +75,21 @@
           @click="demoQrClick"
         >
           <div class="text-center px-6">
-            <UIcon name="i-heroicons-qr-code" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
-            <p class="font-medium text-gray-500 dark:text-gray-400 mb-1">Заглушка QR-кода</p>
+            <UIcon
+              name="i-heroicons-qr-code"
+              class="w-12 h-12 mx-auto mb-3 text-gray-400"
+            />
+            <p class="font-medium text-gray-500 dark:text-gray-400 mb-1">
+              Заглушка QR-кода
+            </p>
             <p class="text-xs text-gray-400 dark:text-gray-500">Демо-режим</p>
           </div>
         </div>
 
         <div class="space-y-3">
-          <p class="text-sm font-medium text-gray-500">Или выберите тестового пользователя:</p>
+          <p class="text-sm font-medium text-gray-500">
+            Или выберите тестового пользователя:
+          </p>
 
           <!-- Кнопка Admin -->
           <button
@@ -90,13 +97,20 @@
             class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl transition-all active:scale-[0.97]"
           >
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center text-sm font-bold">A</div>
+              <div
+                class="w-8 h-8 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center text-sm font-bold"
+              >
+                A
+              </div>
               <div class="text-left">
                 <p class="font-semibold">Admin</p>
                 <p class="text-xs text-gray-500">admin@test.com / admin123</p>
               </div>
             </div>
-            <UIcon name="i-heroicons-arrow-right" class="w-5 h-5 text-gray-400" />
+            <UIcon
+              name="i-heroicons-arrow-right"
+              class="w-5 h-5 text-gray-400"
+            />
           </button>
 
           <!-- Кнопка User -->
@@ -105,13 +119,20 @@
             class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl transition-all active:scale-[0.97]"
           >
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-sm font-bold">U</div>
+              <div
+                class="w-8 h-8 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-sm font-bold"
+              >
+                U
+              </div>
               <div class="text-left">
                 <p class="font-semibold">User</p>
                 <p class="text-xs text-gray-500">user@test.com / 123456</p>
               </div>
             </div>
-            <UIcon name="i-heroicons-arrow-right" class="w-5 h-5 text-gray-400" />
+            <UIcon
+              name="i-heroicons-arrow-right"
+              class="w-5 h-5 text-gray-400"
+            />
           </button>
         </div>
 
@@ -214,6 +235,16 @@ const demoLoginAs = async (role: "admin" | "user") => {
 const cancelQrLogin = () => {
   showQrCode.value = false;
 };
+
+useHead({
+  title: "Вход в Todo App",
+  meta: [
+    {
+      name: "description",
+      content: "Войдите в свой аккаунт, чтобы управлять задачами.",
+    },
+  ],
+});
 </script>
 
 <style>

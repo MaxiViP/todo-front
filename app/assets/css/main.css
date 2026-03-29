@@ -2,34 +2,26 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-/* Тема */
-@theme static {
+/* Кастомные CSS-переменные (работают без Tailwind) */
+:root {
   --font-sans: "Public Sans", system-ui, sans-serif;
-
-  /* Основные цвета текста и фона */
-  --color-text: #111827;      /* темный текст (Dark Gray) */
-  --color-bg: #ffffff;        /* белый фон */
-  --color-bg-overlay: rgba(0, 0, 0, 0.4); /* полупрозрачный черный для оверлея */
-
-  /* Кнопки */
-  --color-btn-primary-bg: #22c55e; /* зеленый для кнопок сохранения */
+  --color-text: #111827;
+  --color-bg: #ffffff;
+  --color-bg-overlay: rgba(0, 0, 0, 0.4);
+  --color-btn-primary-bg: #22c55e;
   --color-btn-primary-text: #ffffff;
-  --color-btn-ghost-text: #374151; /* темно-серый для кнопок "Отмена" */
-
-  /* Модалки */
+  --color-btn-ghost-text: #374151;
   --modal-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   --modal-border-radius: 1rem;
   --modal-padding: 1.5rem;
 }
 
-/* Дополнительно: глобальный текст */
 body {
   font-family: var(--font-sans);
   color: var(--color-text);
   background-color: var(--color-bg);
 }
 
-/* Модалки */
 .modal-overlay {
   background-color: var(--color-bg-overlay);
 }
@@ -42,7 +34,6 @@ body {
   color: var(--color-text);
 }
 
-/* Кнопки */
 .btn-primary {
   background-color: var(--color-btn-primary-bg);
   color: var(--color-btn-primary-text);
@@ -51,4 +42,3 @@ body {
 .btn-ghost {
   color: var(--color-btn-ghost-text);
 }
-
