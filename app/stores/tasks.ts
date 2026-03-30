@@ -46,7 +46,10 @@ export const useTasksStore = defineStore("tasks", () => {
         },
       });
 
-      tasks.value = data.tasks || [];
+      tasks.value = (data.tasks || []).map((task: any) => ({
+        ...task,
+        isCompleted: Boolean(task.isCompleted), // 🔥 ВАЖНО
+      }));
       total.value = data.total || 0;
     } catch (e: any) {
       console.error(e);
@@ -63,8 +66,27 @@ export const useTasksStore = defineStore("tasks", () => {
   };
 
   const updateTask = async (id: string, updates: any) => {
-    await $api.put(`/tasks/${id}`, updates);
-    await fetchTasks();
+    const index = tasks.value.findIndex((t) => t.id === id);
+
+    if (index !== -1) {
+      tasks.value[index] = {
+        ...tasks.value[index],
+        ...updates,
+      };
+    }
+
+    try {
+      await $api.put(`/tasks/${id}`, {
+        ...updates,
+        isCompleted:
+          updates.isCompleted !== undefined
+            ? Boolean(updates.isCompleted)
+            : undefined,
+      });
+    } catch (e) {
+      await fetchTasks(); // rollback
+      throw e;
+    }
   };
 
   const deleteTask = async (id: string) => {

@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { reactive, ref, watch } from "vue";
 import type { Task } from "@/types/task";
 import { priorityMap } from "@/utils/priority";
 
@@ -104,14 +104,17 @@ const emit = defineEmits<{
 
 const dropdownOpen = ref(false);
 
-
-
+// =====================
+// OPTIONS
+// =====================
 const priorityOptions = Object.entries(priorityMap).map(([value, data]) => ({
   value,
   label: data.label,
 }));
 
-// Форма
+// =====================
+// FORM
+// =====================
 const form = reactive({
   title: "",
   description: "",
@@ -119,18 +122,34 @@ const form = reactive({
   priority: "normal",
 });
 
-// Если редактирование
-if (props.initial) {
-  Object.assign(form, props.initial);
-}
+// =====================
+// SYNC WITH INITIAL
+// =====================
+watch(
+  () => props.initial,
+  (val) => {
+    if (!val) return;
 
-// Метки
+    Object.assign(form, {
+      title: "",
+      description: "",
+      priority: "normal",
+      ...val,
+      dueDate: val.dueDate
+        ? val.dueDate.split("T")[0]
+        : new Date().toISOString().split("T")[0],
+    });
+  },
+  { immediate: true },
+);
+
+// =====================
+// UI
+// =====================
 const priorityLabel = (value: string) => {
-  const option = priorityOptions.find((o) => o.value === value);
-  return option ? option.label : "Обычный";
+  return priorityOptions.find((o) => o.value === value)?.label || "Обычный";
 };
 
-// Дропдаун
 const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value;
 };
@@ -140,12 +159,11 @@ const selectPriority = (value: string) => {
   dropdownOpen.value = false;
 };
 
-// Cancel
-const onCancel = () => {
-  emit("cancel");
-};
+// =====================
+// ACTIONS
+// =====================
+const onCancel = () => emit("cancel");
 
-// Submit
 const submit = () => {
   if (!form.title || !form.dueDate) {
     alert("Заполните название и срок");
@@ -154,7 +172,7 @@ const submit = () => {
 
   emit("save", {
     ...form,
-    dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : null,
+    dueDate: form.dueDate || null,
   });
 };
 </script>

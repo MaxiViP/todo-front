@@ -109,8 +109,11 @@
     </div>
 
     <!-- Загрузка -->
-    <div v-if="tasksStore.loading" class="flex justify-center py-12">
-      <AppSpinner />
+    <div
+      v-if="tasksStore.loading"
+      class="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3"
+    >
+      <TaskSkeleton v-for="i in 6" :key="i" />
     </div>
 
     <!-- Пусто -->
@@ -157,36 +160,48 @@
       :title="editingTask ? 'Редактировать задачу' : 'Новая задача'"
     >
       <TaskForm
+        :key="editingTask?.id || 'new'"
         :initial="editingTask"
         @save="handleSave"
         @cancel="closeModal"
       />
     </UModal>
   </div>
-  <TaskSkeleton v-if="tasksStore.loading" v-for="i in 6" :key="i" />
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useDebounceFn, onClickOutside } from "@vueuse/core";
 import { useTasksStore } from "@/stores/tasks";
-import { definePageMeta } from '#imports';
+import { definePageMeta } from "#imports";
 import UModal from "@/components/ui/AppModal.vue";
 import TaskCard from "@/components/task/TaskCard.vue";
 import TaskForm from "@/components/task/TaskForm.vue";
 import UButton from "@/components/ui/UButton.vue";
 import UCard from "@/components/ui/UCard.vue";
 import UInput from "@/components/ui/UInput.vue";
-import AppSpinner from "@/components/ui/AppSpinner.vue";
-import { useDropdown } from '@/composables/useDropdown';
+// import AppSpinner from "@/components/ui/AppSpinner.vue";
+import { useDropdown } from "@/composables/useDropdown";
+import TaskSkeleton from "@/components/task/TaskSkeleton.vue";
+import { useAuthStore } from "@/stores/auth";
 
+const authStore = useAuthStore();
+const tasksStore = useTasksStore();
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuth) => {
+    if (isAuth) {
+      tasksStore.fetchTasks();
+    }
+  },
+  { immediate: true },
+);
 
 definePageMeta({ middleware: "auth" });
 
-const tasksStore = useTasksStore();
-
-const sortDropdown = useDropdown();
-const statusDropdown = useDropdown();
+// const sortDropdown = useDropdown();
+// const statusDropdown = useDropdown();
 
 // =====================
 // STATE
