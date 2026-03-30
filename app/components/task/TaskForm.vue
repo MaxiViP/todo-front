@@ -1,6 +1,5 @@
 <template>
   <form class="space-y-5" @submit.prevent="submit">
-    <!-- Название -->
     <UInput
       v-model="form.title"
       label="Название"
@@ -15,7 +14,6 @@
       class="w-full bg-gray-50 border border-gray-300 focus:border-green-400 focus:ring-1 focus:ring-green-300 rounded-md"
     />
 
-    <!-- Срок выполнения -->
     <UInput
       v-model="form.dueDate"
       type="date"
@@ -24,7 +22,6 @@
       class="bg-gray-50 border border-gray-300 focus:border-green-400 focus:ring-1 focus:ring-green-300 rounded-md"
     />
 
-    <!-- Приоритет -->
     <div class="relative">
       <label class="block text-gray-700 mb-1 font-medium">Приоритет</label>
       <button
@@ -73,7 +70,6 @@
       </ul>
     </div>
 
-    <!-- Кнопки -->
     <div class="flex justify-end gap-3 mt-6">
       <UButton
         type="button"
@@ -104,17 +100,11 @@ const emit = defineEmits<{
 
 const dropdownOpen = ref(false);
 
-// =====================
-// OPTIONS
-// =====================
 const priorityOptions = Object.entries(priorityMap).map(([value, data]) => ({
   value,
   label: data.label,
 }));
 
-// =====================
-// FORM
-// =====================
 const form = reactive({
   title: "",
   description: "",
@@ -122,9 +112,6 @@ const form = reactive({
   priority: "normal",
 });
 
-// =====================
-// SYNC WITH INITIAL
-// =====================
 watch(
   () => props.initial,
   (val) => {
@@ -143,9 +130,6 @@ watch(
   { immediate: true },
 );
 
-// =====================
-// UI
-// =====================
 const priorityLabel = (value: string) => {
   return priorityOptions.find((o) => o.value === value)?.label || "Обычный";
 };
@@ -159,9 +143,6 @@ const selectPriority = (value: string) => {
   dropdownOpen.value = false;
 };
 
-// =====================
-// ACTIONS
-// =====================
 const onCancel = () => emit("cancel");
 
 const submit = () => {

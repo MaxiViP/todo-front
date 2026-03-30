@@ -5,13 +5,10 @@
     "paths": {
       "~/*": ["./app/*"],
       "@/*": ["./app/*"],
-      "#app": [".nuxt/imports"], // добавлено для TypeScript
-      "#imports": [".nuxt/imports"] // добавлено для TS глобальных функций
+      "#app": [".nuxt/imports"],
+      "#imports": [".nuxt/imports"]
     },
-    "types": [
-      "@types/node",
-      "@nuxt/schema" // добавляет типы Nuxt 4
-    ]
+    "types": ["@types/node", "@nuxt/schema"]
   },
-  "include": ["types/**/*.d.ts", "app/**/*", ".nuxt"]
+  "include": ["types/**/*.d.ts", "app/**/*", ".nuxt", "nuxt.config.ts"]
 }

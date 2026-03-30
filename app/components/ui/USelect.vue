@@ -27,7 +27,6 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: string | number | null): void;
 }>();
 
-// Двусторонняя привязка через v-model
 const modelValue = computed({
   get: () => props.modelValue,
   set: (value) => emit("update:modelValue", value),

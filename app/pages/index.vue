@@ -3,7 +3,6 @@
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"
     >
-      <!-- Поиск -->
       <div class="relative w-full sm:w-96">
         <UInput
           v-model="search"
@@ -16,9 +15,7 @@
         />
       </div>
 
-      <!-- Фильтры -->
       <div class="flex flex-col sm:flex-row gap-3">
-        <!-- Статус -->
         <div
           ref="statusRef"
           class="relative w-full sm:w-auto min-w-[160px] text-gray-400 hover:text-gray-600"
@@ -50,7 +47,6 @@
           </ul>
         </div>
 
-        <!-- Сортировка -->
         <div
           ref="sortRef"
           class="relative w-full sm:w-auto min-w-[160px] text-gray-400 hover:text-gray-600"
@@ -82,7 +78,6 @@
           </ul>
         </div>
 
-        <!-- Кнопка -->
         <UButton
           @click="openModal"
           class="w-full sm:w-auto group transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
@@ -100,7 +95,6 @@
       </div>
     </div>
 
-    <!-- Ошибка -->
     <div
       v-if="tasksStore.error"
       class="text-red-600 mb-4 p-3 bg-red-50 rounded"
@@ -108,7 +102,6 @@
       {{ tasksStore.error }}
     </div>
 
-    <!-- Загрузка -->
     <div
       v-if="tasksStore.loading"
       class="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3"
@@ -116,13 +109,11 @@
       <TaskSkeleton v-for="i in 6" :key="i" />
     </div>
 
-    <!-- Пусто -->
     <UCard v-else-if="tasksStore.tasks?.length === 0" class="text-center py-12">
       <p class="text-gray-900" v-if="search">Ничего не найдено 😢</p>
       <p class="text-gray-900" v-else>Нет задач. Создайте первую!</p>
     </UCard>
 
-    <!-- Сетка задач -->
     <div v-else class="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
       <TaskCard
         v-for="task in tasksStore.tasks"
@@ -133,7 +124,6 @@
       />
     </div>
 
-    <!-- Пагинация -->
     <div v-if="tasksStore.total > 0" class="flex justify-center mt-6 gap-2">
       <UButton
         :disabled="tasksStore.loading || tasksStore.page === 1"
@@ -154,7 +144,6 @@
       </UButton>
     </div>
 
-    <!-- Модалка -->
     <UModal
       v-model="showModal"
       :title="editingTask ? 'Редактировать задачу' : 'Новая задача'"
@@ -180,13 +169,13 @@ import TaskForm from "@/components/task/TaskForm.vue";
 import UButton from "@/components/ui/UButton.vue";
 import UCard from "@/components/ui/UCard.vue";
 import UInput from "@/components/ui/UInput.vue";
-// import AppSpinner from "@/components/ui/AppSpinner.vue";
-import { useDropdown } from "@/composables/useDropdown";
 import TaskSkeleton from "@/components/task/TaskSkeleton.vue";
 import { useAuthStore } from "@/stores/auth";
+import { useToast } from "#imports";
 
 const authStore = useAuthStore();
 const tasksStore = useTasksStore();
+const toast = useToast();
 
 watch(
   () => authStore.isAuthenticated,
@@ -200,12 +189,6 @@ watch(
 
 definePageMeta({ middleware: "auth" });
 
-// const sortDropdown = useDropdown();
-// const statusDropdown = useDropdown();
-
-// =====================
-// STATE
-// =====================
 const showModal = ref(false);
 const editingTask = ref<any>(null);
 
@@ -215,9 +198,6 @@ const statusOpen = ref(false);
 const sortRef = ref();
 const statusRef = ref();
 
-// =====================
-// SEARCH
-// =====================
 const search = computed({
   get: () => tasksStore.search,
   set: (val) => {
@@ -225,9 +205,6 @@ const search = computed({
   },
 });
 
-// =====================
-// PAGINATION
-// =====================
 const totalPages = computed(() =>
   tasksStore.limit ? Math.ceil(tasksStore.total / tasksStore.limit) : 1,
 );
@@ -240,9 +217,6 @@ const debouncedNextPage = useDebounceFn(() => {
   if (tasksStore.page < totalPages.value) tasksStore.page++;
 }, 80);
 
-// =====================
-// DROPDOWN
-// =====================
 const toggleSort = () => {
   sortOpen.value = !sortOpen.value;
   statusOpen.value = false;
@@ -258,19 +232,15 @@ const selectSort = (value: string) => {
     tasksStore.sortBy = value;
     sortOpen.value = false;
     tasksStore.fetchTasks();
-  } else {
-    console.warn("Недопустимое значение сортировки:", value);
   }
 };
+
 const selectStatus = (value: string) => {
   tasksStore.filterStatus = value;
   statusOpen.value = false;
   tasksStore.fetchTasks();
 };
 
-// =====================
-// LABELS
-// =====================
 const getSortLabel = (value: string) => {
   return sortOptions.find((o) => o.value === value)?.label || "По дате";
 };
@@ -279,15 +249,9 @@ const getStatusLabel = (value: string) => {
   return statusOptions.find((o) => o.value === value)?.label || "Все задачи";
 };
 
-// =====================
-// OUTSIDE CLICK
-// =====================
 onClickOutside(sortRef, () => (sortOpen.value = false));
 onClickOutside(statusRef, () => (statusOpen.value = false));
 
-// =====================
-// MODAL
-// =====================
 const openModal = () => {
   editingTask.value = null;
   showModal.value = true;
@@ -307,12 +271,29 @@ const handleSave = async (formData: any) => {
   try {
     if (editingTask.value?.id) {
       await tasksStore.updateTask(editingTask.value.id, formData);
+      toast.add({
+        title: "Задача обновлена",
+        description: "Изменения успешно сохранены",
+        color: "green",
+        icon: "i-lucide-check-circle",
+      });
     } else {
       await tasksStore.createTask(formData);
+      toast.add({
+        title: "Задача создана",
+        description: "Новая задача добавлена в список",
+        color: "green",
+        icon: "i-lucide-check-circle",
+      });
     }
     closeModal();
-  } catch (e) {
-    console.error(e);
+  } catch (e: any) {
+    toast.add({
+      title: "Ошибка сохранения",
+      description: e?.message || "Не удалось сохранить задачу. Попробуйте ещё раз.",
+      color: "red",
+      icon: "i-lucide-alert-circle",
+    });
   }
 };
 
@@ -321,14 +302,22 @@ const deleteTask = async (id: string) => {
 
   try {
     await tasksStore.deleteTask(id);
-  } catch (e) {
-    console.error(e);
+    toast.add({
+      title: "Задача удалена",
+      description: "Задача успешно удалена из списка",
+      color: "green",
+      icon: "i-lucide-check-circle",
+    });
+  } catch (e: any) {
+    toast.add({
+      title: "Ошибка удаления",
+      description: e?.message || "Не удалось удалить задачу. Попробуйте ещё раз.",
+      color: "red",
+      icon: "i-lucide-alert-circle",
+    });
   }
 };
 
-// =====================
-// OPTIONS
-// =====================
 const statusOptions = [
   { value: "", label: "Все задачи" },
   { value: "false", label: "Активные" },

@@ -14,7 +14,6 @@
           class="bg-white text-gray-900 p-6 rounded-xl w-96 relative shadow-xl"
           v-if="modelValue"
         >
-          <!-- Кнопка закрыть -->
           <button
             type="button"
             class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors"
@@ -24,11 +23,9 @@
             ✕
           </button>
 
-          <!-- Заголовок -->
-          <h2 id="modal-title">{{ title }}  
+          <h2 id="modal-title">{{ title }}
           </h2>
 
-          <!-- Контент -->
           <div id="modal-desc" class="space-y-4">
             <slot />
           </div>
@@ -54,7 +51,6 @@ const close = () => {
 </script>
 
 <style scoped>
-/* Фейд анимация для затемнения фона */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.25s ease;
@@ -68,7 +64,6 @@ const close = () => {
   opacity: 1;
 }
 
-/* Анимация скейла для контента */
 .scale-fade-enter-active {
   transition:
     transform 0.25s ease,

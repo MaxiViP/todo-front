@@ -1,4 +1,3 @@
-<!-- pages/register.vue -->
 <template>
   <div
     class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950 p-4"
@@ -70,7 +69,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import { useNuxtApp, navigateTo } from "#imports"; // Nuxt 4 helpers
+import { useNuxtApp, navigateTo } from "#imports";
 import { useAuthStore } from "@/stores/auth";
 
 const form = reactive({
@@ -107,7 +106,6 @@ const handleRegister = async () => {
       role,
     });
 
-    // Автоматический вход после регистрации
     if (res.data.token) {
       auth.loginWithToken(res.data.token, res.data.user);
       await navigateTo("/");
@@ -115,7 +113,6 @@ const handleRegister = async () => {
       await auth.login(form.email, form.password);
     }
   } catch (err: any) {
-    console.error(err);
     const msg = err.response?.data?.message || "Ошибка регистрации";
     if (msg.includes("exists") || err.response?.status === 409) {
       alert("Пользователь с таким email уже существует");

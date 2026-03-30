@@ -4,7 +4,10 @@
   >
     <UHeader>
       <template #left>
-        <h1 class="text-2xl font-semibold tracking-tight">ToDo App</h1>
+        <NuxtLink to="/" class="flex items-center gap-2">
+          <img src="/logo.png" alt="Logo" class="h-8 w-auto" />
+          <span class="text-2xl font-semibold tracking-tight">ToDo App</span>
+        </NuxtLink>
       </template>
       <template #right>
         <div class="relative" ref="userButton">
@@ -21,7 +24,6 @@
             }}
           </UButton>
 
-          <!-- Малые экраны: только иконка -->
           <UButton
             v-if="auth.isAuthenticated && isMobile"
             variant="ghost"
@@ -37,8 +39,6 @@
               class="w-5 h-5"
             />
           </UButton>
-
-          <!-- Попап меню -->
           <div
             v-if="showUserMenu"
             class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 py-1"
@@ -90,34 +90,32 @@ const auth = useAuthStore();
 const showUserMenu = ref(false);
 const userButton = ref<HTMLElement | null>(null);
 
-// Адаптивность
 const isMobile = ref(false);
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640;
 };
+
 onMounted(() => {
   handleResize();
   window.addEventListener("resize", handleResize);
   document.addEventListener("click", handleClickOutside);
 });
+
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
   document.removeEventListener("click", handleClickOutside);
 });
 
-// Попап под кнопкой
 const toggleUserMenu = () => {
   showUserMenu.value = !showUserMenu.value;
 };
 
-// Закрытие по клику вне
 const handleClickOutside = (e: MouseEvent) => {
   if (!userButton.value?.contains(e.target as Node) && showUserMenu.value) {
     showUserMenu.value = false;
   }
 };
 
-// Действия
 const logoutAndClose = () => {
   auth.logout();
   showUserMenu.value = false;
@@ -126,6 +124,5 @@ const logoutAndClose = () => {
 const switchUser = () => {
   auth.logout();
   showUserMenu.value = false;
-  // Можно добавить редирект на страницу логина
 };
 </script>

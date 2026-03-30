@@ -5,10 +5,8 @@
     <UCard class="w-full max-w-md">
       <h2 class="text-2xl font-semibold mb-6 text-center">Вход в ToDo App</h2>
 
-      <!-- Обычная форма входа -->
       <div v-if="!showQrCode">
         <form @submit.prevent="handleLogin" class="space-y-5">
-          <!-- Flex-контейнер для полей и QR-кнопки -->
           <div class="flex items-start gap-3">
             <div class="flex-1 space-y-5">
               <UFormField label="Email" required>
@@ -40,7 +38,6 @@
               </div>
             </div>
 
-            <!-- Квадратная кнопка с QR-кодом справа -->
             <button
               type="button"
               @click="startQrLogin"
@@ -63,13 +60,11 @@
         </form>
       </div>
 
-      <!-- QR-вход → ЗАГЛУШКА (демо-режим) -->
       <div v-else class="text-center space-y-6">
         <p class="text-gray-700 dark:text-gray-300">
           Отсканируйте QR-код мобильным приложением
         </p>
 
-        <!-- Заглушка вместо canvas -->
         <div
           class="mx-auto w-52 h-52 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex flex-col items-center justify-center bg-white dark:bg-gray-900 shadow-inner cursor-pointer hover:border-green-500 transition-colors"
           @click="demoQrClick"
@@ -91,7 +86,6 @@
             Или выберите тестового пользователя:
           </p>
 
-          <!-- Кнопка Admin -->
           <button
             @click="demoLoginAs('admin')"
             class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl transition-all active:scale-[0.97]"
@@ -113,7 +107,6 @@
             />
           </button>
 
-          <!-- Кнопка User -->
           <button
             @click="demoLoginAs('user')"
             class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl transition-all active:scale-[0.97]"
@@ -162,18 +155,15 @@ import { useHead } from "#imports";
 
 const auth = useAuthStore();
 
-// Обычная форма
 const email = ref("");
 const password = ref("");
 const rememberMe = ref(false);
 const loading = ref(false);
 
-// QR-вход (демо)
 const showQrCode = ref(false);
 const qrInitLoading = ref(false);
 
 onUnmounted(() => {
-  // Ничего не чистим — polling удалён
 });
 
 const handleLogin = async () => {
@@ -192,21 +182,17 @@ const handleLogin = async () => {
   }
 };
 
-// Запуск «QR-входа» — просто показываем заглушку
 const startQrLogin = async () => {
   qrInitLoading.value = true;
-  // Имитация небольшой задержки (как будто запрашиваем QR)
   await new Promise((resolve) => setTimeout(resolve, 400));
   showQrCode.value = true;
   qrInitLoading.value = false;
 };
 
-// Клик по заглушке QR-кода — просто уведомление (можно убрать, если не нужно)
 const demoQrClick = () => {
   alert("Это заглушка QR-кода.\n\nВыберите тестового пользователя ниже 👇");
 };
 
-// Автоматический вход по демо-пользователям
 const demoLoginAs = async (role: "admin" | "user") => {
   let demoEmail = "";
   let demoPassword = "";
@@ -219,15 +205,15 @@ const demoLoginAs = async (role: "admin" | "user") => {
     demoPassword = "123456";
   }
 
-  showQrCode.value = false; // сразу скрываем QR-режим
+  showQrCode.value = false;
 
   loading.value = true;
   try {
-    // Используем тот же метод, что и в обычном логине
-    await auth.login(demoEmail, demoPassword, true); // rememberMe = true для демо
+
+    await auth.login(demoEmail, demoPassword, true);
   } catch (err: any) {
     alert(err.response?.data?.message || "Ошибка входа");
-    showQrCode.value = true; // если вдруг ошибка — возвращаем обратно
+    showQrCode.value = true;
   } finally {
     loading.value = false;
   }

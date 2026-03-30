@@ -1,17 +1,15 @@
-// plugins/api.client.ts
-import { defineNuxtPlugin } from "#imports"; // 🔹 Nuxt 4
+import { defineNuxtPlugin } from "#imports";
 import axios from "axios";
-import { useAuthStore } from "@/stores/auth"; // 🔹 Pinia store
+import { useAuthStore } from "@/stores/auth";
 
 export default defineNuxtPlugin(() => {
   const authStore = useAuthStore();
 
   const api = axios.create({
     baseURL: "http://localhost:3001/api",
-    withCredentials: true, // обязательно для cookie
+    withCredentials: true,
   });
 
-  // Добавляем access token к каждому запросу
   api.interceptors.request.use((config) => {
     if (authStore.token) {
       config.headers.Authorization = `Bearer ${authStore.token}`;
@@ -19,7 +17,6 @@ export default defineNuxtPlugin(() => {
     return config;
   });
 
-  // Обработка 401 и refresh token
   api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -40,9 +37,7 @@ export default defineNuxtPlugin(() => {
             originalRequest.headers.Authorization = `Bearer ${authStore.token}`;
             return api(originalRequest);
           }
-        } catch (e) {
-          console.error("Refresh failed", e);
-        }
+        } catch  {}
         await authStore.logout();
       }
 

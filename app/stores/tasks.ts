@@ -19,18 +19,8 @@ export const useTasksStore = defineStore("tasks", () => {
 
   const { $api } = useNuxtApp();
 
-  // Основной запрос
   const fetchTasks = async () => {
     if (!useAuthStore().isAuthenticated) return;
-
-    console.log(
-      "📡 FETCH TASKS → page:",
-      page.value,
-      "search:",
-      search.value,
-      "status:",
-      filterStatus.value,
-    );
 
     loading.value = true;
     error.value = null;
@@ -48,18 +38,16 @@ export const useTasksStore = defineStore("tasks", () => {
 
       tasks.value = (data.tasks || []).map((task: any) => ({
         ...task,
-        isCompleted: Boolean(task.isCompleted), // 🔥 ВАЖНО
+        isCompleted: Boolean(task.isCompleted),
       }));
       total.value = data.total || 0;
     } catch (e: any) {
-      console.error(e);
       error.value = e.message || "Ошибка загрузки задач";
     } finally {
       loading.value = false;
     }
   };
 
-  // Мутации (после успеха сразу обновляем список)
   const createTask = async (taskData: any) => {
     await $api.post("/tasks", taskData);
     await fetchTasks();
@@ -84,7 +72,7 @@ export const useTasksStore = defineStore("tasks", () => {
             : undefined,
       });
     } catch (e) {
-      await fetchTasks(); // rollback
+      await fetchTasks();
       throw e;
     }
   };
@@ -92,18 +80,16 @@ export const useTasksStore = defineStore("tasks", () => {
   const deleteTask = async (id: string) => {
     const prev = [...tasks.value];
 
-    // 💥 сразу удаляем
     tasks.value = tasks.value.filter((t) => t.id !== id);
 
     try {
       await $api.delete(`/tasks/${id}`);
     } catch (e) {
-      // rollback
       tasks.value = prev;
       throw e;
     }
   };
-  // Debounce только для поиска
+
   const debouncedSearch = useDebounceFn(() => {
     fetchTasks();
   }, 350);

@@ -1,7 +1,6 @@
-// stores/auth.ts
 import { defineStore } from "pinia";
-import { ref, computed } from "vue"; // 🔹 ref и computed
-import { useNuxtApp, navigateTo } from "#imports"; // 🔹 Nuxt функции
+import { ref, computed } from "vue";
+import { useNuxtApp, navigateTo } from "#imports";
 
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<string | null>(null);
@@ -9,7 +8,6 @@ export const useAuthStore = defineStore("auth", () => {
 
   const isAuthenticated = computed(() => !!token.value);
 
-  // 🔁 REFRESH (через axios)
   const restoreSession = async (): Promise<boolean> => {
     if (!process.client) return false;
 
@@ -23,19 +21,16 @@ export const useAuthStore = defineStore("auth", () => {
 
       return true;
     } catch (err) {
-      console.error("Restore session failed:", err);
       token.value = null;
       user.value = null;
       return false;
     }
   };
 
-  // 🚀 INIT
   const init = async () => {
     await restoreSession();
   };
 
-  // 🔐 LOGIN
   const login = async (email: string, password: string, rememberMe = false) => {
     const { $api } = useNuxtApp();
 
@@ -55,7 +50,6 @@ export const useAuthStore = defineStore("auth", () => {
     }
   };
 
-  // 🔳 QR LOGIN
   const loginWithToken = async (newToken: string, newUser?: any) => {
     token.value = newToken;
     if (newUser) user.value = newUser;
@@ -63,14 +57,12 @@ export const useAuthStore = defineStore("auth", () => {
     await navigateTo("/");
   };
 
-  // 🚪 LOGOUT
   const logout = async () => {
     const { $api } = useNuxtApp();
 
     try {
       await $api.post("/auth/logout");
     } catch (e) {
-      // игнор
     }
 
     token.value = null;
